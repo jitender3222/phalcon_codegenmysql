@@ -86,24 +86,18 @@ $di->setShared('db', function () {
     return $connection;
 });
 
-$di->set(
-    'dbMysql',
-    function () {
-        return new DbAdapter(
-            [
-                'host'     => 'localhost',
-                'username' => 'root',
-                'password' => 'root',
-                'dbname'   => 'information_schema',
-            ]
-        );
-    }
-);
 
 // This service returns a FormDB MySQL database
 $di->set('formDb', function (){
     $config = $this->getConfig();
-    return new DbAdapter($config->formDb->toArray());
+    return new DbAdapter(
+            [
+                'host'     => $config->database->host,
+                'username' => $config->database->username,
+                'password' => $config->database->password,
+                'dbname'   => 'information_schema',
+            ]
+        );
 });
 
 /**

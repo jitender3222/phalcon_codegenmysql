@@ -18,17 +18,6 @@ $db = array(
 );
 
 
-
-$formDb = array(
-    'adapter' => 'Mysql',
-    "host" => 'localhost',
-    "dbname" => "information_schema", //do not change this
-    "port" => 3306,
-    "username" => "root", //your root user username
-    "password" => 'root', //password
-    "charset" => 'utf8',
-);
-
 return new \Phalcon\Config([
     // 'database' => [
     //     'adapter'     => 'Mysql',
