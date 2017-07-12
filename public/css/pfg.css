@@ -1,0 +1,8 @@
+.successMessage{
+	border: 1px solid gray;
+	border-radius: 4px;
+	background-color: #6ea26e;
+	size: 50px;
+	padding: 10px;
+	margin: 15px;
+}

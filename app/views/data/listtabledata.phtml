@@ -1,0 +1,128 @@
+<h2>SELECT Tables And their fields for which you want form</h2>
+<?php
+//print_r($tablecolumndata);
+echo $this->tag->form(array("data/generatecode", "class"=>"form-horizontal", "role"=>"form"));
+foreach ($tablecolumndata as $key => $alldata) {
+?>
+	<div class="form-group">
+	  <div class="col-sm-12">
+		<label style="cursor: pointer; display: block;border: 1px solid red;border-radius: 6px;padding: 10px;margin: 10px;color: blue;">
+			 
+			<label class="toggler" for="<?=$key ?>">
+				<i class="fa fa-plus" data-toggle="collapse" data-target="#div-<?= $key ?>">&nbsp;&nbsp;<?=$key ?></i>
+			</label>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="checkbox" 
+				name="checkbox_table[]" 
+				value="<?= $key ?>" id="select_table_<?= $key ?>" 
+				onclick='if( $(this).is(":checked") ){ 
+							$(".sel_all_<?= $key ?>").prop("disabled",false); 
+							$(".col_<?= $key ?>").prop("disabled",false);
+							$(".con_act_<?= $key ?>").prop("disabled",false);
+						 } else{ 
+						 	$(".sel_all_<?= $key ?>").prop("disabled",true); 
+						 	$(".col_<?= $key ?>").prop("disabled",true); 
+						 	$(".sel_all_<?= $key ?>").prop("checked",false); 
+						 	$(".col_<?= $key ?>").prop("checked",false);
+						 	$(".con_act_<?= $key ?>").prop("disabled",true); 
+						 }'>
+		</label>
+
+		<div class="lefttext select_subject collapse" id="div-<?= $key ?>"  aria-expanded="false" style="height: 0px;padding: 10px;margin: 10px;border: 1px solid blue;color: red;">
+			<label class="col-sm-6" style="float:none;">
+				<label class="control-label col-sm-2" for="controller_<?= $key ?>">Controller:</label>
+				<div class="col-sm-10">          
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="controller_<?= $key ?>" placeholder="Enter Proper Controller Name" name="controller_<?= $key ?>" required="required" disabled>
+	      		</div>
+			</label>
+			<label class="col-sm-6" style="float:none;">
+				<label class="control-label col-sm-2" for="action_<?= $key ?>">Action:</label>
+				<div class="col-sm-10">          
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="action_<?= $key ?>" placeholder="Enter Proper Action Name" name="action_<?= $key ?>" required="required" disabled>
+	      		</div>
+			</label>
+			
+			<input type="checkbox" 
+				name="checkbox_all" class="sel_all_<?= $key ?>" 
+				id="select_all_<?= $key ?>" 
+				onclick='if( $(this).is(":checked") ){ 
+							$(".col_<?=$key?>").prop("checked",true); 
+							$(".in_type_<?=$key ?>").prop("disabled",false); 
+							$(".required_<?=$key ?>").prop("disabled",false);
+						 } else{ 
+						 	$(".col_<?= $key ?>").prop("checked",false); 
+						 	$(".in_type_<?=$key ?>").prop("disabled",true);
+						 	$(".required_<?=$key ?>").prop("disabled",true);
+						 }' disabled>&nbsp;
+			<label class="toggler" for="Selectall<?php echo $key; ?>">Select all</label><br clear="all">
+
+
+			<?php
+				foreach($alldata as $key => $column){
+					if($column['EXTRA']!= 'auto_increment'){
+			?>
+				<label class="col-sm-4" style="float:none;">
+					<input type="checkbox" 
+						value="<?= $column['COLUMN_NAME'] ?>" 
+						name="<?= $column['TABLE_NAME']?>[]" 
+						class="col_<?=$column['TABLE_NAME']?>" 
+						id="<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME']?>"
+						onclick='if( $(this).is(":checked") ){ 
+									$(".in_type_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>").prop("disabled",false); 
+									$(".required_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>").prop("disabled",false);
+									$(".enum_set_vals_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>").prop("disabled",false);
+								 } else{ 
+								 	$(".in_type_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>").prop("disabled",true);
+								 	$(".required_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>").prop("disabled",true);
+								 	$(".enum_set_vals_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>").prop("disabled",true);
+								 }' disabled>&nbsp;
+					<label class="toggler" for="<?=$column['COLUMN_NAME']?>"><?=$column['COLUMN_NAME']?></label>
+				</label>
+				<label class="col-sm-4" style="float:none">
+					<select class="in_type_<?=$column['TABLE_NAME']?> in_type_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'] ?>" 
+						id="input_type_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME']?>" 
+						name="input_type_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME']?>" disabled>
+			                <option value="text" <?= (in_array($column['DATA_TYPE'], array("varchar","char","tinytext","tinyblob")))?'selected':' ' ;?> >TEXT</option>
+			                <option value="number" <?= (in_array($column['DATA_TYPE'], array("int","tinyint","smallint","mediumint","bigint","float","double","decimal")))?'selected':' ' ;?> >NUMBER</option>
+			                <option value="date" <?= (in_array($column['DATA_TYPE'], array("date")))?'selected':' ' ;?> >DATE</option>
+			                <option value="datetime-local" <?= (in_array($column['DATA_TYPE'], array("datetime","timestamp")))?'selected':' ' ;?> >DATETIME</option>
+			                <option value="time" <?= (in_array($column['DATA_TYPE'], array("time")))?'selected':' ' ;?> >TIME</option>
+			                <option value="textarea" <?= (in_array($column['DATA_TYPE'], array("text", "mediumtext", "longtext")))?'selected':' ' ;?> >TEXTAREA</option>
+			                <option value="select" <?= (in_array($column['DATA_TYPE'], array("enum")))?'selected':' ' ;?> >SELECT</option>
+			                <option value="select_multiple" <?= (in_array($column['DATA_TYPE'], array("set")))?'selected':' ' ;?> >SELECT MULTIPLE</option>
+		            </select>
+				</label>
+				<label class="col-sm-4" style="float:none">
+					<input type="checkbox" value="yes" 
+						name="required_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME']?>" 
+						class="required_<?=$column['TABLE_NAME']?> required_<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME']?>" 
+						id="<?=$column['TABLE_NAME'].'_'.$column['COLUMN_NAME']?>"
+						<?= ($column['IS_NULLABLE']=='NO')?'checked':' ';?> 						
+						disabled>&nbsp;
+					<label class="toggler" for="<?=$column['COLUMN_NAME']?>">REQUIRED</label>
+				</label>
+				<?php if(in_array($column['DATA_TYPE'], array("enum","set"))){
+					preg_match_all("~'(.*?)'~", $column['COLUMN_TYPE'], $enum_set_vals);
+					foreach ($enum_set_vals[1] as $value) {
+						echo '<input type="hidden" class="enum_set_vals_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'" name="enum_set_vals_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'[]" value="'. $value. '" disabled>';
+					}
+				  }
+				?>
+			<?php
+				}	
+			} 
+			?>
+			<br clear="all">
+		</div>
+
+		<?php
+			}
+		?>
+	  </div>
+	</div>
+	<div class="form-group">        
+      <div class="col-sm-offset-1 col-sm-11">
+        <button type="submit" class="btn btn-default">Submit</button>
+      </div>
+	</div>
+</form>
