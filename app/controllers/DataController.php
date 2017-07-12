@@ -8,19 +8,16 @@ class DataController extends ControllerBase
 
     public function indexAction()
     {
-    	
+    	return $this->dispatcher->forward(array(
+                        "controller" => "data",
+                        "action" => "listtabledata"
+        ));
     }
 
     //this method list all tables alongwith their coloumns with their data types and validations
     public function listtabledataAction(){
-    	if (!$this->request->isPost()) {
-            return $this->dispatcher->forward(array(
-                        "controller" => "data",
-                        "action" => "index"
-            ));
-        }
 
-        $db_name = $this->request->getPost('db');
+        $db_name = $this->config->database['dbname'];
 
         $query = "SELECT TABLE_NAME FROM `TABLES` WHERE `TABLE_SCHEMA` = '".$db_name."'";
         $tables = new Resultset(null, null, $this->formDb->query($query, null));
@@ -47,7 +44,7 @@ class DataController extends ControllerBase
         if (!$this->request->isPost() || empty($this->request->getPost())) {
             return $this->dispatcher->forward(array(
                         "controller" => "data",
-                        "action" => "index"
+                        "action" => "listtabledata"
             ));
         }
         echo "<pre>";
@@ -57,31 +54,36 @@ class DataController extends ControllerBase
             $action_name        =   $this->request->getPost('action_'.$table);
             $formString         =   '';
             
-            $table_columns = $this->request->getPost($table);
-            if($table_columns){
-                clearstatcache();
-                if (!file_exists(BASE_PATH.'/app/controllers/'.$controller_name.'Controller.php')){
-                    $this->createNewFile($controller_name.'Controller', $action_name.'Action', $table);
+            if($controller_name != 'Data'){
+                $table_columns = $this->request->getPost($table);
+                if($table_columns){
+                    clearstatcache();
+
+                    if (!file_exists(BASE_PATH.'/app/controllers/'.$controller_name.'Controller.php')){
+                        $this->createNewFile($controller_name.'Controller', $action_name.'Action', $table);
+                    }else{
+                        $this->createOnlyMethod($controller_name.'Controller', $action_name.'Action', $table);
+                    }
+                    $modelName = implode('', array_map('ucfirst',explode('_', $table)));
+                    if(!file_exists(BASE_PATH.'/app/models/'.$modelName.'.php')) {
+                        $this->createModel($table);
+                    }
                 }else{
-                    $this->createOnlyMethod($controller_name.'Controller', $action_name.'Action', $table);
+                    echo "you did't select any column for table ".$table;
                 }
-                $modelName = implode('', array_map('ucfirst',explode('_', $table)));
-                if(!file_exists(BASE_PATH.'/app/models/'.$modelName.'.php')) {
-                    $this->createModel($table);
+                foreach($table_columns as $table_column){
+                    echo $table_column.' is of type '.$this->request->getPost('input_type_'.$table.'_'.$table_column)."<br>";
+
+                    $formString .= $this->formString($table, $table_column, $this->request->getPost());
                 }
-            }else{
-                echo "you did't select any column for table ".$table;
-            }
-            foreach($table_columns as $table_column){
-                echo $table_column.' is of type '.$this->request->getPost('input_type_'.$table.'_'.$table_column)."<br>";
 
-                $formString .= $this->formString($table, $table_column, $this->request->getPost());
-            }
-
-            if($formString != ''){
-                $this->createView($controller_name, $action_name, $formString, $table);
-            }
+                if($formString != ''){
+                    $this->createView($controller_name, $action_name, $formString, $table);
+                }
             
+            }else{
+            echo "Controller name must Be Different from Data for table ".$table;
+            }
         }
         die;
     }

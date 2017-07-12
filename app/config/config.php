@@ -10,7 +10,7 @@ defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 $db = array(
     'adapter' => 'Mysql',
     "host" => 'localhost',
-    "dbname" => "database",
+    "dbname" => "tmt",
     "port" => 3306,
     "username" => "root",
     "password" => 'root',
