@@ -6,23 +6,26 @@
 defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
 defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
+//edit your db config
 $db = array(
     'adapter' => 'Mysql',
     "host" => 'localhost',
-    "dbname" => "tmt",
+    "dbname" => "database",
     "port" => 3306,
     "username" => "root",
     "password" => 'root',
     "charset" => 'utf8',
 );
 
+
+
 $formDb = array(
     'adapter' => 'Mysql',
     "host" => 'localhost',
-    "dbname" => "information_schema",
+    "dbname" => "information_schema", //do not change this
     "port" => 3306,
-    "username" => "root",
-    "password" => 'root',
+    "username" => "root", //your root user username
+    "password" => 'root', //password
     "charset" => 'utf8',
 );
 
