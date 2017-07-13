@@ -1,0 +1,20 @@
+<div class="col-sm-12">
+	<div class="col-sm-5">
+		<h3>Response Body</h3>
+	</div>
+	<div class="col-sm-5" style="padding: 22px;">
+		<?=$this->tag->linkTo(array('data/listtabledata', '<i class="fa fa-table" aria-hidden="true"></i> Table Listing')) ?>
+	</div>
+	<div class="col-sm-2" style="padding: 22px;">
+		<?=$this->tag->linkTo(array('data/logout', '<i class="fa fa-sign-out" aria-hidden="true"></i> Logout')) ?>
+	</div>
+</div>
+<div class="col-sm-12" style="color: blue; font-size: 16px;padding: 20px;border: 1px solid red;">
+	<?php
+		foreach ($responseData as $response) {
+			echo '<p>'.$response.'</p>';
+		}
+
+	?>
+	
+</div>

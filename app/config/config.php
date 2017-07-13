@@ -5,31 +5,19 @@
  */
 defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
 defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
-
-//edit your db config
-$db = array(
-    'adapter' => 'Mysql',
-    "host" => 'localhost',
-    "dbname" => "tmt",
-    "port" => 3306,
-    "username" => "root",
-    "password" => 'root',
-    "charset" => 'utf8',
-);
+defined('USER_NAME') || define('USER_NAME', 'dba');
+defined('PASSWORD') || define('PASSWORD', '12345');
 
 
 return new \Phalcon\Config([
-    // 'database' => [
-    //     'adapter'     => 'Mysql',
-    //     'host'        => 'localhost',
-    //     'username'    => 'root',
-    //     'password'    => '',
-    //     'dbname'      => 'test',
-    //     'charset'     => 'utf8',
-    // ],
-
-    'database' => $db,
-    'formDb' => $formDb,
+    'database' => [
+        'adapter'     => 'Mysql',
+        'host'        => 'localhost',
+        'username'    => 'root',
+        'password'    => 'root',
+        'dbname'      => 'tmt',
+        'charset'     => 'utf8',
+    ],
 
     'application' => [
         'appDir'         => APP_PATH . '/',

@@ -4,18 +4,35 @@ use Phalcon\Mvc\Model\Resultset\Simple as Resultset;
 
 class DataController extends ControllerBase
 {
-
+    var $response_data = array();
 
     public function indexAction()
     {
-    	return $this->dispatcher->forward(array(
-                        "controller" => "data",
-                        "action" => "listtabledata"
-        ));
+        if ($this->request->isPost() || !empty($this->request->getPost())) {
+
+            $username = $this->request->getPost('uname');
+            $password = $this->request->getPost('pwd');
+
+            if($username == USER_NAME && $password == PASSWORD){ 
+
+                $this->session->set('datauser',1);   
+                return $this->response->redirect('data/listtabledata');
+            }
+        }
+
+        if($this->session->get('datauser') == 1) {
+            return $this->response->redirect('data/listtabledata');
+        }
     }
 
-    //this method list all tables alongwith their coloumns with their data types and validations
+    /*
+     *this method list all tables alongwith their coloumns with their data types and validations
+     */
     public function listtabledataAction(){
+
+        if($this->session->get('datauser') != 1) {
+            return $this->response->redirect('data/index');
+        }
 
         $db_name = $this->config->database['dbname'];
 
@@ -23,31 +40,30 @@ class DataController extends ControllerBase
         $tables = new Resultset(null, null, $this->formDb->query($query, null));
         $tables = $tables->toArray();
         foreach ($tables as  $table) {
-        	$cquery = "SELECT * from COLUMNS WHERE TABLE_SCHEMA = '".$db_name."' AND 
-                       TABLE_NAME = '".$table['TABLE_NAME']."'";
-        	$columns = new Resultset(null, null, $this->formDb->query($cquery, null));
-        	$columns = $columns->toArray();
+            $cquery = "SELECT * from COLUMNS WHERE TABLE_SCHEMA = '".$db_name."' AND TABLE_NAME = '".$table['TABLE_NAME']."'";
+            $columns = new Resultset(null, null, $this->formDb->query($cquery, null));
+            $columns = $columns->toArray();
 
-        	foreach ($columns as $key=>$column) {
-        		foreach ($column as $key => $columnData) {
-        			$tabledata[$table['TABLE_NAME']][$column['COLUMN_NAME']][$key] = $columnData;
-           		}
-        	}
+            foreach ($columns as $key=>$column) {
+                foreach ($column as $key => $columnData) {
+                    $tabledata[$table['TABLE_NAME']][$column['COLUMN_NAME']][$key] = $columnData;
+                }
+            }
         }
-        // echo "<pre>";
-        // print_r($tabledata); die;
+        
         $this->view->tablecolumndata = $tabledata;
     }
 
     //this will generate necessary code in controllers and views folder
     public function generatecodeAction(){
-        if (!$this->request->isPost() || empty($this->request->getPost())) {
-            return $this->dispatcher->forward(array(
-                        "controller" => "data",
-                        "action" => "listtabledata"
-            ));
+        if($this->session->get('datauser') != 1) {
+            return $this->response->redirect('data/index');
         }
-        echo "<pre>";
+
+        if (!$this->request->isPost() || empty($this->request->getPost())) {
+            return $this->response->redirect('data/listtabledata');
+        }
+        
         $tables = $this->request->getPost('checkbox_table');
         foreach ($tables as $table) {
             $controller_name    =   $this->request->getPost('controller_'.$table);
@@ -60,20 +76,18 @@ class DataController extends ControllerBase
                     clearstatcache();
 
                     if (!file_exists(BASE_PATH.'/app/controllers/'.$controller_name.'Controller.php')){
-                        $this->createNewFile($controller_name.'Controller', $action_name.'Action', $table);
+                        $this->createNewController($controller_name.'Controller', $action_name.'Action', $table);
                     }else{
-                        $this->createOnlyMethod($controller_name.'Controller', $action_name.'Action', $table);
+                        $this->createMethod($controller_name.'Controller', $action_name.'Action', $table);
                     }
                     $modelName = implode('', array_map('ucfirst',explode('_', $table)));
                     if(!file_exists(BASE_PATH.'/app/models/'.$modelName.'.php')) {
                         $this->createModel($table);
                     }
                 }else{
-                    echo "you did't select any column for table ".$table;
+                    array_push($this->response_data, "Did't select any column for table ".$table);
                 }
                 foreach($table_columns as $table_column){
-                    echo $table_column.' is of type '.$this->request->getPost('input_type_'.$table.'_'.$table_column)."<br>";
-
                     $formString .= $this->formString($table, $table_column, $this->request->getPost());
                 }
 
@@ -82,10 +96,10 @@ class DataController extends ControllerBase
                 }
             
             }else{
-            echo "Controller name must Be Different from Data for table ".$table;
+            array_push($this->response_data, "Controller name must Be Different from Data for table ".$table);
             }
         }
-        die;
+        $this->view->responseData = $this->response_data;
     }
 
 
@@ -114,6 +128,8 @@ class DataController extends ControllerBase
         $viewfile = fopen($view, "w") or die("Unable to open file!");
         fwrite($viewfile, $html_string);
         fclose($viewfile);
+        $msg ="View File app/views/".strtolower($controllerName)."/$actionName.phtml is created";
+        array_push($this->response_data, $msg);
     } 
     
     private function formString($tableName, $columnName, $columnData){
@@ -166,7 +182,7 @@ class DataController extends ControllerBase
     }
 
     //creating new controller first time
-    private function createNewFile($controllerName, $actionName, $tableName){
+    private function createNewController($controllerName, $actionName, $tableName){
         $file = BASE_PATH.'/app/controllers/'.$controllerName.'.php';
         $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
         $dataString =  '<?php
@@ -192,11 +208,13 @@ class '.$controllerName.' extends ControllerBase
         $newfile = fopen($file, "w") or die("Unable to open file!");
         fwrite($newfile, $dataString);
         fclose($newfile);
+        $msg ="Controller File $controllerName.php created";
+        array_push($this->response_data, $msg); 
 
     }
 
     // append method in existing controller file
-    private function createOnlyMethod($controllerName, $actionName, $tableName){
+    private function createMethod($controllerName, $actionName, $tableName){
         $file = BASE_PATH.'/app/controllers/'.$controllerName.'.php';
         $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
         $dataString =  '
@@ -213,6 +231,8 @@ class '.$controllerName.' extends ControllerBase
         }
     }';
        $this->appendMethod($file, $dataString);
+       $msg ="Action $actionName created in controller $controllerName.php";
+       array_push($this->response_data, $msg);
     }
 
 
@@ -255,6 +275,8 @@ class '.$modelName.' extends \Phalcon\Mvc\Model
         $newfile = fopen($file, "w") or die("Unable to open file!");
         fwrite($newfile, $dataString);
         fclose($newfile);
+        $msg ="Model File $modelName.php created";
+        array_push($this->response_data, $msg);
     }
 
     //function for appending string before last non-blank line
@@ -284,5 +306,11 @@ class '.$modelName.' extends \Phalcon\Mvc\Model
         //write the last line
         fwrite($f, $lines[$lineCount-2]);
         fclose($f);
+    }
+
+    public function logoutAction() {
+        
+        $this->session->remove('datauser');
+        return $this->response->redirect('data/index');
     }
 }

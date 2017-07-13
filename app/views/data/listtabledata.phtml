@@ -1,6 +1,12 @@
-<h2>SELECT Tables And their fields for which you want form</h2>
+<div class="col-sm-12">
+	<div class="col-sm-10">
+		<h3>SELECT Tables And their fields for which you want form</h3>
+	</div>
+	<div class="col-sm-2" style="padding: 22px;">
+		<?=$this->tag->linkTo(array('data/logout', '<i class="fa fa-sign-out" aria-hidden="true"></i> Logout')) ?>
+	</div>
+</div>
 <?php
-//print_r($tablecolumndata);
 echo $this->tag->form(array("data/generatecode", "class"=>"form-horizontal", "role"=>"form"));
 foreach ($tablecolumndata as $key => $alldata) {
 ?>
@@ -32,13 +38,13 @@ foreach ($tablecolumndata as $key => $alldata) {
 			<label class="col-sm-6" style="float:none;">
 				<label class="control-label col-sm-2" for="controller_<?= $key ?>">Controller:</label>
 				<div class="col-sm-10">          
-	        		<input type="text" class="form-control con_act_<?= $key ?>" id="controller_<?= $key ?>" placeholder="Enter Proper Controller Name" name="controller_<?= $key ?>" required="required" disabled>
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="controller_<?= $key ?>" placeholder="Do not append Controller in last. e.g. = UsersReport" name="controller_<?= $key ?>" required="required" disabled>
 	      		</div>
 			</label>
 			<label class="col-sm-6" style="float:none;">
 				<label class="control-label col-sm-2" for="action_<?= $key ?>">Action:</label>
 				<div class="col-sm-10">          
-	        		<input type="text" class="form-control con_act_<?= $key ?>" id="action_<?= $key ?>" placeholder="Enter Proper Action Name" name="action_<?= $key ?>" required="required" disabled>
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="action_<?= $key ?>" placeholder="Do not append Action in last. e.g. = newUser" name="action_<?= $key ?>" required="required" disabled>
 	      		</div>
 			</label>
 			
