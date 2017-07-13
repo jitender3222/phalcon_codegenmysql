@@ -107,7 +107,26 @@ foreach ($tablecolumndata as $key => $alldata) {
 						disabled>&nbsp;
 					<label class="toggler" for="<?=$column['COLUMN_NAME']?>">REQUIRED</label>
 				</label>
-				<?php if(in_array($column['DATA_TYPE'], array("enum","set"))){
+
+				<?php 
+				if(in_array($column['DATA_TYPE'], array("varchar","char","tinytext","tinyblob","text", "mediumtext", "longtext"))){
+					echo '<input type="hidden" class="textgroup_max_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'" name="textgroup_max_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'" value="'.$column['CHARACTER_MAXIMUM_LENGTH']. '">';
+
+				}elseif(in_array($column['DATA_TYPE'], array("int","tinyint","smallint","mediumint","bigint","float","double","decimal"))){
+					preg_match_all('/\((.*?)\)/', $column['COLUMN_TYPE'], $validations);
+					$validation_values = explode(',', $validations[1][0]);
+					if(in_array($column['DATA_TYPE'], array("int","tinyint","smallint","mediumint","bigint","decimal"))){
+						$max = $validation_values[0];
+					}else{
+						$max = $validation_values[0] - $validation_values[1];
+					}
+
+
+					echo '<input type="hidden" class="numgroup_max_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'" name="numgroup_max_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'" value="'.$max. '">';
+
+				}
+
+				if(in_array($column['DATA_TYPE'], array("enum","set"))){
 					preg_match_all("~'(.*?)'~", $column['COLUMN_TYPE'], $enum_set_vals);
 					foreach ($enum_set_vals[1] as $value) {
 						echo '<input type="hidden" class="enum_set_vals_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'" name="enum_set_vals_'.$column['TABLE_NAME'].'_'.$column['COLUMN_NAME'].'[]" value="'. $value. '" disabled>';

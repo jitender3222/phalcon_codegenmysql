@@ -63,7 +63,8 @@ class DataController extends ControllerBase
         if (!$this->request->isPost() || empty($this->request->getPost())) {
             return $this->response->redirect('data/listtabledata');
         }
-        
+        echo "<pre>";
+        print_r($this->request->getPost()); die;
         $tables = $this->request->getPost('checkbox_table');
         foreach ($tables as $table) {
             $controller_name    =   $this->request->getPost('controller_'.$table);
@@ -138,19 +139,33 @@ class DataController extends ControllerBase
         {   
             $input_type = $columnData['input_type_'.$tableName.'_'.$columnName];
             $required = $columnData['required_'.$tableName.'_'.$columnName];
-            $html_string = '<div class="form-group">
+            if($input_type == 'text'){
+                $maxlength = $columnData['textgroup_max_'.$tableName.'_'.$columnName];
+                $html_string = '<div class="form-group">
                                     <label class="control-label col-sm-2" for="'.$columnName.'">'.ucwords(str_replace('_', ' ', $columnName)).':</label>
                                     <div class="col-sm-4">
-                                      <input type="'.$input_type.'" class="form-control" id="'.$columnName.'" placeholder="Enter '.ucwords(str_replace('_', ' ', $columnName)).'" name="'.$columnName.'" maxlength="" '.(($required == 'yes')?'required="required"':'').'>
+                                      <input type="'.$input_type.'" class="form-control" id="'.$columnName.'" placeholder="Enter '.ucwords(str_replace('_', ' ', $columnName)).'" name="'.$columnName.'" maxlength="'.$maxlength.'" '.(($required == 'yes')?'required="required"':'').'>
                                     </div>
                                   </div>
                                   ';
+            }elseif($input_type == 'number'){
+                $max = $this->maxbydigit($columnData['numgroup_max_'.$tableName.'_'.$columnName]);
+                $html_string = '<div class="form-group">
+                                    <label class="control-label col-sm-2" for="'.$columnName.'">'.ucwords(str_replace('_', ' ', $columnName)).':</label>
+                                    <div class="col-sm-4">
+                                      <input type="'.$input_type.'" class="form-control" id="'.$columnName.'" placeholder="Enter '.ucwords(str_replace('_', ' ', $columnName)).'" name="'.$columnName.'" max="'.$max.'" '.(($required == 'yes')?'required="required"':'').'>
+                                    </div>
+                                  </div>
+                                  ';
+            }
+            
         }else if($columnData['input_type_'.$tableName.'_'.$columnName] == 'textarea'){
             $required = $columnData['required_'.$tableName.'_'.$columnName];
+            $maxlength = $columnData['textgroup_max_'.$tableName.'_'.$columnName];
             $html_string = '<div class="form-group">
                                     <label class="control-label col-sm-2" for="'.$columnName.'">'.ucwords(str_replace('_', ' ', $columnName)).':</label>
                                     <div class="col-sm-4">
-                                      <textarea class="form-control" rows="5" id="'.$columnName.'" name="'.$columnName.'" '.(($required == 'yes')?'required="required"':'').'>
+                                      <textarea class="form-control" rows="5" id="'.$columnName.'" name="'.$columnName.'" maxlength="'.$maxlength.'" '.(($required == 'yes')?'required="required"':'').'>
                                       </textarea>
                                     </div>
                                   </div>
@@ -306,6 +321,14 @@ class '.$modelName.' extends \Phalcon\Mvc\Model
         //write the last line
         fwrite($f, $lines[$lineCount-2]);
         fclose($f);
+    }
+
+    private function maxbydigit($digit){
+        $max = 1;
+        for($i=1;$i<=$digit;$i++){
+            $max = $max * 10;
+        }
+        return ($max-1);
     }
 
     public function logoutAction() {
