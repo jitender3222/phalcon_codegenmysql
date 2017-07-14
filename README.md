@@ -1,5 +1,5 @@
 # phalcon_codegenmysql
-Phalcon for Automatically generating controllers, models and views for Mysql Databases
+Phalcon plugin to auto generate controllers, models and views from MySQL Database
 
 We can use this for auto generating the code for mysql database tables.
 
@@ -9,8 +9,8 @@ Guidelines for using this as follows:-
 
 1. First You need to Install PHP, MySql and a web server e.g. apache2, nginx on your machine.
 	On Debian/Ubuntu
-	i. 	apt-get install tasksel
-	ii.	now run command tasksel  and choose LAMP server and follow instructions
+	1. 	apt-get install tasksel
+	2.	now run command tasksel  and choose LAMP server and follow instructions
 
 2. First We need to install the latest version of phalcon on our machine
 
