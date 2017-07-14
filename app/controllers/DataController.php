@@ -63,8 +63,7 @@ class DataController extends ControllerBase
         if (!$this->request->isPost() || empty($this->request->getPost())) {
             return $this->response->redirect('data/listtabledata');
         }
-        echo "<pre>";
-        print_r($this->request->getPost()); die;
+        
         $tables = $this->request->getPost('checkbox_table');
         foreach ($tables as $table) {
             $controller_name    =   $this->request->getPost('controller_'.$table);
@@ -157,7 +156,16 @@ class DataController extends ControllerBase
                                     </div>
                                   </div>
                                   ';
+            }else{
+                $html_string = '<div class="form-group">
+                                    <label class="control-label col-sm-2" for="'.$columnName.'">'.ucwords(str_replace('_', ' ', $columnName)).':</label>
+                                    <div class="col-sm-4">
+                                      <input type="'.$input_type.'" class="form-control" id="'.$columnName.'" placeholder="Enter '.ucwords(str_replace('_', ' ', $columnName)).'" name="'.$columnName.'" '.(($required == 'yes')?'required="required"':'').'>
+                                    </div>
+                                  </div>
+                                  ';
             }
+
             
         }else if($columnData['input_type_'.$tableName.'_'.$columnName] == 'textarea'){
             $required = $columnData['required_'.$tableName.'_'.$columnName];
@@ -219,7 +227,8 @@ class '.$controllerName.' extends ControllerBase
             }
         }
     }
-}';
+}
+';
         $newfile = fopen($file, "w") or die("Unable to open file!");
         fwrite($newfile, $dataString);
         fclose($newfile);
