@@ -1,5 +1,5 @@
 # phalcon_codegenmysql
-Phalcon for Automatically generating controllers, models and views for Mysql Databases
+Phalcon plugin to auto generate controllers, models and views from MySQL Database
 
 We can use this for auto generating the code for mysql database tables.
 
