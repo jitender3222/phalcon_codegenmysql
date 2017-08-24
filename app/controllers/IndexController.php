@@ -5,7 +5,7 @@ class IndexController extends ControllerBase
 
     public function indexAction()
     {
-    	echo BASE_PATH.'/app/controllers'; die;
+    	//echo BASE_PATH.'/app/controllers'; die;
     }
 
 }

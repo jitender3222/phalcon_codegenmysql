@@ -76,9 +76,9 @@ class DataController extends ControllerBase
                     clearstatcache();
 
                     if (!file_exists(BASE_PATH.'/app/controllers/'.$controller_name.'Controller.php')){
-                        $this->createNewController($controller_name.'Controller', $action_name.'Action', $table);
+                        $method_created = $this->createNewController($controller_name.'Controller', $action_name.'Action', $table);
                     }else{
-                        $this->createMethod($controller_name.'Controller', $action_name.'Action', $table);
+                        $method_created = $this->createMethod($controller_name.'Controller', $action_name.'Action', $table);
                     }
                     $modelName = implode('', array_map('ucfirst',explode('_', $table)));
                     if(!file_exists(BASE_PATH.'/app/models/'.$modelName.'.php')) {
@@ -87,12 +87,14 @@ class DataController extends ControllerBase
                 }else{
                     array_push($this->response_data, "Did't select any column for table ".$table);
                 }
-                foreach($table_columns as $table_column){
-                    $formString .= $this->formString($table, $table_column, $this->request->getPost());
-                }
+                if($method_created == true){
+                    foreach($table_columns as $table_column){
+                        $formString .= $this->formString($table, $table_column, $this->request->getPost());
+                    }
 
-                if($formString != ''){
-                    $this->createView($controller_name, $action_name, $formString, $table);
+                    if($formString != ''){
+                        $this->createView($controller_name, $action_name, $formString, $table);
+                    }
                 }
             
             }else{
@@ -206,7 +208,7 @@ class DataController extends ControllerBase
 
     //creating new controller first time
     private function createNewController($controllerName, $actionName, $tableName){
-        $file = BASE_PATH.'/app/controllers/'.$controllerName.'.php';
+        $file = BASE_PATH.'/app/controllers/'.ucfirst($controllerName).'.php';
         $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
         $dataString =  '<?php
 class '.$controllerName.' extends ControllerBase
@@ -232,16 +234,21 @@ class '.$controllerName.' extends ControllerBase
         $newfile = fopen($file, "w") or die("Unable to open file!");
         fwrite($newfile, $dataString);
         fclose($newfile);
-        $msg ="Controller File $controllerName.php created";
+        $msg ="Controller File ".ucfirst($controllerName).".php created";
         array_push($this->response_data, $msg); 
-
+        return true;
     }
 
     // append method in existing controller file
     private function createMethod($controllerName, $actionName, $tableName){
         $file = BASE_PATH.'/app/controllers/'.$controllerName.'.php';
-        $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
-        $dataString =  '
+        if( strpos(file_get_contents($file), $actionName) == true){
+            $msg ="<font style='color:red;'>Action $actionName exist controller $controllerName.php. Please create Action by another Name.</font>";
+            array_push($this->response_data, $msg);
+            return false;
+        }else{
+            $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
+            $dataString =  '
     public function '.$actionName.'(){
         if($this->request->isPost()){
             $modelObj = new '.$modelName.'();
@@ -254,9 +261,12 @@ class '.$controllerName.' extends ControllerBase
             }
         }
     }';
-       $this->appendMethod($file, $dataString);
-       $msg ="Action $actionName created in controller $controllerName.php";
-       array_push($this->response_data, $msg);
+            $this->appendMethod($file, $dataString);
+            $msg ="Action $actionName created in controller $controllerName.php";
+            array_push($this->response_data, $msg);
+            return true;
+        }
+       
     }
 
 
