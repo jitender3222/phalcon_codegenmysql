@@ -98,7 +98,7 @@ class DataController extends ControllerBase
                 }
             
             }else{
-            array_push($this->response_data, "Controller name must Be Different from Data for table ".$table);
+            array_push($this->response_data, "Controller name must Be Different from 'Data' for table ".$table);
             }
         }
         $this->view->responseData = $this->response_data;
