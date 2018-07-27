@@ -66,8 +66,10 @@ class DataController extends ControllerBase
         
         $tables = $this->request->getPost('checkbox_table');
         foreach ($tables as $table) {
-            $controller_name    =   $this->request->getPost('controller_'.$table);
-            $action_name        =   $this->request->getPost('action_'.$table);
+            $controller_name           =   $this->request->getPost('controller_'.$table);
+            $insert_action_name        =   $this->request->getPost('insert_action_'.$table);
+            $list_action_name          =   $this->request->getPost('list_action_'.$table);
+            $delete_action_name        =   $this->request->getPost('delete_action_'.$table);
             $formString         =   '';
             
             if($controller_name != 'Data'){
@@ -76,10 +78,29 @@ class DataController extends ControllerBase
                     clearstatcache();
 
                     if (!file_exists(BASE_PATH.'/app/controllers/'.$controller_name.'Controller.php')){
-                        $method_created = $this->createNewController($controller_name.'Controller', $action_name.'Action', $table);
+                        $controller_created = $this->createNewController($controller_name.'Controller', $table);
+                        if($insert_action_name){
+                            $create_method_created = $this->createMethod($controller_name.'Controller', $insert_action_name.'Action', $table);
+                        }
+                        if($list_action_name){
+                            $list_method_created = $this->listMethod($controller_name.'Controller', $list_action_name.'Action', $table);
+                        }
+                        if($delete_action_name){
+                            $delete_method_created = $this->deleteMethod($controller_name.'Controller', $delete_action_name.'Action', $table);
+                        }
                     }else{
-                        $method_created = $this->createMethod($controller_name.'Controller', $action_name.'Action', $table);
+                        if($insert_action_name){
+                            $create_method_created = $this->createMethod($controller_name.'Controller', $insert_action_name.'Action', $table);
+                        }
+                        if($list_action_name){
+                            $list_method_created = $this->listMethod($controller_name.'Controller', $list_action_name.'Action', $table);
+                        }
+                        if($delete_action_name){
+                            $delete_method_created = $this->deleteMethod($controller_name.'Controller', $delete_action_name.'Action', $table);
+                        }
                     }
+
+
                     $modelName = implode('', array_map('ucfirst',explode('_', $table)));
                     if(!file_exists(BASE_PATH.'/app/models/'.$modelName.'.php')) {
                         $this->createModel($table);
@@ -87,26 +108,83 @@ class DataController extends ControllerBase
                 }else{
                     array_push($this->response_data, "Did't select any column for table ".$table);
                 }
-                if($method_created == true){
+                if($create_method_created == true){
                     foreach($table_columns as $table_column){
                         $formString .= $this->formString($table, $table_column, $this->request->getPost());
                     }
 
                     if($formString != ''){
-                        $this->createView($controller_name, $action_name, $formString, $table);
+                        $this->createView($controller_name, $insert_action_name, $formString, $table);
                     }
+                }
+                if($list_method_created == true){
+                        $this->createListView($controller_name, $list_action_name, $table);
                 }
             
             }else{
-            array_push($this->response_data, "Controller name must Be Different from 'Data' for table ".$table);
+                array_push($this->response_data, "Controller name must Be Different from 'Data' for table ".$table);
             }
         }
         $this->view->responseData = $this->response_data;
     }
 
 
-    private function createView($controllerName, $actionName, $formString, $table){
+    private function createListView($controllerName, $actionName, $table){
 
+        $html_string = '<h2>'.ucwords(str_replace('_', ' ', $table)).' Data Listing</h2>
+<div>
+    <?php
+        if(!$tableData){
+    ?>
+            <h3>No Data to List</h3>
+    <?php
+        }else{
+    ?>
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <?php
+                    foreach ($tableData[0] as $key => $value) {
+                        echo "<th>$key</th>";
+                    }
+                    echo "<th>Delete Action</th>"
+                ?>
+            </tr>
+         </thead>
+         <tbody>
+         <?php 
+            foreach ($tableData as $key => $tdata) {
+                echo "<tr>";
+                    foreach ($tdata as $key => $t) {
+                        echo "<td>$t</td>";
+                    }
+                    echo "<td><a href="./deleteFunctionName/$tdata->primaryKeyName">Delete</td>";
+                echo "</tr>";
+            }
+         ?>
+         </tbody>
+        </table>
+
+
+    <?php  } ?>
+</div>';
+
+        $view = BASE_PATH.'/app/views/'.strtolower($controllerName).'/'.$actionName.'.phtml';
+        $view_folder = BASE_PATH.'/app/views/'.strtolower($controllerName);
+        if(!file_exists($view_folder)){
+            mkdir($view_folder, 0777, true);
+        }
+
+        $viewfile = fopen($view, "w") or die("Unable to open file!");
+        fwrite($viewfile, $html_string);
+        fclose($viewfile);
+        $msg ="View File app/views/".strtolower($controllerName)."/$actionName.phtml is created";
+        array_push($this->response_data, $msg);
+    } 
+    
+    
+    
+    private function createView($controllerName, $actionName, $formString, $table){
         $html_string = '<h2>'.ucwords(str_replace('_', ' ', $table)).'</h2>
                         <?php 
                             $this->flashSession->output();   
@@ -207,9 +285,9 @@ class DataController extends ControllerBase
     }
 
     //creating new controller first time
-    private function createNewController($controllerName, $actionName, $tableName){
+    private function createNewController($controllerName, $tableName){
         $file = BASE_PATH.'/app/controllers/'.ucfirst($controllerName).'.php';
-        $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
+        // $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
         $dataString =  '<?php
 class '.$controllerName.' extends ControllerBase
 {
@@ -217,18 +295,7 @@ class '.$controllerName.' extends ControllerBase
     {
         // write code here;  
     }
-    public function '.$actionName.'(){
-        if($this->request->isPost()){
-            $modelObj = new '.$modelName.'();
-            $postData = $this->request->getPost();
-            foreach ($postData as $key => $data) {
-                $modelObj->$key = $data;
-            }
-            if($modelObj->save()){
-                $this->flashSession->success(" Data Saved Successfully");
-            }
-        }
-    }
+
 }
 ';
         $newfile = fopen($file, "w") or die("Unable to open file!");
@@ -260,6 +327,56 @@ class '.$controllerName.' extends ControllerBase
                 $this->flashSession->success(" Data Saved Successfully");
             }
         }
+    }';
+            $this->appendMethod($file, $dataString);
+            $msg ="Action $actionName created in controller $controllerName.php";
+            array_push($this->response_data, $msg);
+            return true;
+        }
+       
+    }
+
+    // append method in existing controller file
+    private function listMethod($controllerName, $actionName, $tableName){
+        $file = BASE_PATH.'/app/controllers/'.$controllerName.'.php';
+        if( strpos(file_get_contents($file), $actionName) == true){
+            $msg ="<font style='color:red;'>Action $actionName exist controller $controllerName.php. Please create Action by another Name.</font>";
+            array_push($this->response_data, $msg);
+            return false;
+        }else{
+            $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
+            $dataString =  '
+    public function '.$actionName.'(){
+        $modelData = '.$modelName.'::find();
+        if(!empty($modelData->toArray())){
+            $this->view->tableData = $modelData;
+        }
+    }';
+            $this->appendMethod($file, $dataString);
+            $msg ="Action $actionName created in controller $controllerName.php";
+            array_push($this->response_data, $msg);
+            return true;
+        }
+       
+    }
+
+
+    // append method in existing controller file
+    private function deleteMethod($controllerName, $actionName, $tableName){
+        $file = BASE_PATH.'/app/controllers/'.$controllerName.'.php';
+        if( strpos(file_get_contents($file), $actionName) == true){
+            $msg ="<font style='color:red;'>Action $actionName exist controller $controllerName.php. Please create Action by another Name.</font>";
+            array_push($this->response_data, $msg);
+            return false;
+        }else{
+            $modelName = implode('', array_map('ucfirst',explode('_', $tableName)));
+            $dataString =  '
+    public function '.$actionName.'($id){
+        $modelData = '.$modelName.'::findFirst($id);
+        if($modelData){
+            $modelData->delete();
+        }
+        $this->response->redirect("/");
     }';
             $this->appendMethod($file, $dataString);
             $msg ="Action $actionName created in controller $controllerName.php";

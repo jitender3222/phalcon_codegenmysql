@@ -42,12 +42,24 @@ foreach ($tablecolumndata as $key => $alldata) {
 	      		</div>
 			</label>
 			<label class="col-sm-6" style="float:none;">
-				<label class="control-label col-sm-2" for="action_<?= $key ?>">Action:</label>
+				<label class="control-label col-sm-2" for="insert_action_<?= $key ?>">Insert Action:</label>
 				<div class="col-sm-10">          
-	        		<input type="text" class="form-control con_act_<?= $key ?>" id="action_<?= $key ?>" placeholder="Do not append Action in last. e.g. = newUser" name="action_<?= $key ?>" required="required" disabled>
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="insert_action_<?= $key ?>" placeholder="Do not append Action in last. e.g. = newUser" name="insert_action_<?= $key ?>" disabled>
 	      		</div>
 			</label>
-			
+			<label class="col-sm-6" style="float:none;">
+				<label class="control-label col-sm-2" for="list_action_<?= $key ?>">Listing Action:</label>
+				<div class="col-sm-10">          
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="list_action_<?= $key ?>" placeholder="Do not append Action in last. e.g. = newUser" name="list_action_<?= $key ?>" disabled>
+	      		</div>
+			</label>
+			<label class="col-sm-6" style="float:none;">
+				<label class="control-label col-sm-2" for="delete_action_<?= $key ?>">Delete Action:</label>
+				<div class="col-sm-10">          
+	        		<input type="text" class="form-control con_act_<?= $key ?>" id="delete_action_<?= $key ?>" placeholder="Do not append Action in last. e.g. = newUser" name="delete_action_<?= $key ?>" disabled>
+	      		</div>
+			</label>
+			</br>
 			<input type="checkbox" 
 				name="checkbox_all" class="sel_all_<?= $key ?>" 
 				id="select_all_<?= $key ?>" 
@@ -59,7 +71,7 @@ foreach ($tablecolumndata as $key => $alldata) {
 						 	$(".col_<?= $key ?>").prop("checked",false); 
 						 	$(".in_type_<?=$key ?>").prop("disabled",true);
 						 	$(".required_<?=$key ?>").prop("disabled",true);
-						 }' disabled>&nbsp;
+						 }' disabled >&nbsp;
 			<label class="toggler" for="Selectall<?php echo $key; ?>">Select all</label><br clear="all">
 
 
